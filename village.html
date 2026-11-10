@@ -161,6 +161,16 @@ h2{font-size:26px;margin:6px 0}
 .slots2 div small{font-size:18px;line-height:1}
 .pad{display:grid;grid-template-columns:repeat(5,64px);gap:8px;justify-content:center;margin-top:10px}
 .pad button{height:60px;border:none;border-radius:16px;background:#fff;box-shadow:0 4px 0 #e0d8ea;font-size:28px}
+.inrow{display:flex;justify-content:center;align-items:center;gap:8px;margin:8px 0}
+.inbox{font:28px Jua,sans-serif;width:min(60vw,260px);text-align:center;padding:10px 12px;border-radius:16px;border:3px solid color-mix(in srgb,var(--main) 45%,#fff);outline:none}
+.inbox:focus{border-color:var(--main)}.inbox.ok{background:#dff7e3;border-color:#6bcb77}
+.unit{font-family:Jua;font-size:24px}
+.note{border:2px solid #8fbf87;border-radius:10px;background:#c9e7c4;color:#24481f;padding:10px 14px;font-family:Jua;font-size:20px;box-shadow:0 4px 0 #0001}
+.note small{font-size:12px}.n5000{background:#f3d9b1;border-color:#d1a86a;color:#5a3b10}
+.tray .note{font-size:15px;padding:6px 8px}
+table.mapg{margin:4px auto;border-collapse:collapse;letter-spacing:0}table.mapg td{width:46px;height:46px;border:1px dashed #c9bfd8;font-size:28px;text-align:center;background:#fffdf5}
+table.mapg th{font-size:15px;color:#8a7f9b;padding:2px 4px}
+body.g3 .story,body.g4 .story{font-size:19px}
 /* overlay */
 .ov{position:fixed;inset:0;z-index:20;background:#2b23407a;display:flex;align-items:center;justify-content:center;padding:12px}
 .ov.hide{display:none}
@@ -267,6 +277,24 @@ RUN.quiz=(sp,el,done,cx)=>{
     el.appendChild(op);
   };next();
 };
+RUN.input=(sp,el,done,cx)=>{
+  let k=0;
+  const norm=v=>String(v).replace(/[\s,]/g,'').replace(/^\./,'0.').toLowerCase();
+  const next=()=>{
+    if(k>=sp.rounds.length)return done();
+    const r=sp.rounds[k];el.innerHTML='';CURQ=r.q||'';
+    if(sp.rounds.length>1)el.appendChild(h('div','cnt',`${k+1} / ${sp.rounds.length}`));
+    if(r.pic)el.appendChild(h('div','pic',r.pic));
+    if(r.q)el.appendChild(h('div','q',r.q));
+    const row=h('div','inrow');const inp=h('input','inbox');inp.type='text';inp.inputMode=r.text?'text':'decimal';inp.autocomplete='off';inp.placeholder=r.ph||(r.text?'답을 써요':'숫자');
+    const un=h('span','unit',r.unit||'');const ok=h('button','btn go','확인 ✔');const msg=h('div','msg');
+    row.append(inp,un);el.append(row,ok,msg);setTimeout(()=>inp.focus(),80);
+    const check=()=>{const v=norm(inp.value);if(!v)return;
+      if(r.ans.map(norm).includes(v)){good();inp.classList.add('ok');ok.disabled=true;msg.textContent='';setTimeout(()=>{k++;next()},700)}
+      else{bad();shake(row);const hn=cx.miss();msg.innerHTML='다시 생각해 봐요!'+(hn&&r.h?`<br>💡 ${r.h}`:'');inp.select()}};
+    ok.onclick=check;inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+  };next();
+};
 RUN.pattern=RUN.quiz;
 RUN.sort=(sp,el,done,cx)=>{
   const pool=h('div','pool'),bins=h('div','bins');
@@ -334,7 +362,7 @@ RUN.clock=(sp,el,done,cx)=>{
     upd();
   };next();
 };
-function coinEl(v,cls){return h('button','coin c'+v+(cls?' '+cls:''),`${v}<small>원</small>`)}
+function coinEl(v,cls){return v>=1000?h('button','note n'+v+(cls?' '+cls:''),`💵 ${v.toLocaleString()}<small>원</small>`):h('button','coin c'+v+(cls?' '+cls:''),`${v}<small>원</small>`)}
 RUN.coins=(sp,el,done,cx)=>{
   let k=0;
   const next=()=>{
@@ -342,13 +370,13 @@ RUN.coins=(sp,el,done,cx)=>{
     const r=sp.rounds[k];el.innerHTML='';const need=r.pay?r.pay-r.price:r.price;
     if(sp.rounds.length>1)el.appendChild(h('div','cnt',`손님 ${k+1} / ${sp.rounds.length}`));
     const shop=h('div','shop');
-    if(r.items){shop.innerHTML=`<div class="pic">${r.items.map(x=>x[0]).join(' ')}</div><div class="q">${r.items.map(x=>`${x[1]} <span class="price">${x[2]}원</span>`).join(' + ')}</div><div>모두 얼마일까요? 돈을 내 봐요!</div>`;CURQ=r.items.map(x=>x[1]+' '+x[2]+'원').join(', ')+'. 모두 얼마일까요?'}
-    else if(r.pay){shop.innerHTML=`<div class="pic">${r.e}</div><div class="q">${r.name} <span class="price">${r.price}원</span></div><div>손님이 <span class="bill">💵 ${r.pay}원</span>을 냈어요. <b>거스름돈</b>을 주세요!</div>`;CURQ=`${r.name} ${r.price}원. 손님이 ${r.pay}원을 냈어요. 거스름돈을 주세요.`}
-    else{shop.innerHTML=`<div class="pic">${r.e}</div><div class="q">${r.name} <span class="price">${r.price}원</span></div>`;CURQ=`${r.name} ${r.price}원`}
+    if(r.items){shop.innerHTML=`<div class="pic">${r.items.map(x=>x[0]).join(' ')}</div><div class="q">${r.items.map(x=>`${x[1]} <span class="price">${x[2].toLocaleString()}원</span>`).join(' + ')}</div><div>모두 얼마일까요? 돈을 내 봐요!</div>`;CURQ=r.items.map(x=>x[1]+' '+x[2]+'원').join(', ')+'. 모두 얼마일까요?'}
+    else if(r.pay){shop.innerHTML=`<div class="pic">${r.e}</div><div class="q">${r.name} <span class="price">${r.price.toLocaleString()}원</span></div><div>손님이 <span class="bill">💵 ${r.pay.toLocaleString()}원</span>을 냈어요. <b>거스름돈</b>을 주세요!</div>`;CURQ=`${r.name} ${r.price}원. 손님이 ${r.pay}원을 냈어요. 거스름돈을 주세요.`}
+    else{shop.innerHTML=`<div class="pic">${r.e}</div><div class="q">${r.name} <span class="price">${r.price.toLocaleString()}원</span></div>`;CURQ=`${r.name} ${r.price}원`}
     const bank=h('div','bank'),tray=h('div','bin tray','<span class="empty">동전을 눌러서 여기에 놓아요</span>'),sum=h('div','sum'),msg=h('div','msg');
     let total=0;
-    const upd=()=>{sum.textContent=sp.showSum?`놓은 돈: ${total}원`:'';const e=tray.querySelector('.empty');if(e)e.style.display=tray.querySelectorAll('.coin').length?'none':''};
-    sp.coins.forEach(v=>{const c=coinEl(v);c.dataset.v=v;c.onclick=()=>{if(tray.querySelectorAll('.coin').length>=20)return;beep(880,.05,'triangle',.06);total+=v;const t=coinEl(v);t.onclick=()=>{total-=v;t.remove();upd()};tray.appendChild(t);upd()};bank.appendChild(c)});
+    const upd=()=>{sum.textContent=sp.showSum?`놓은 돈: ${total.toLocaleString()}원`:'';const e=tray.querySelector('.empty');if(e)e.style.display=tray.querySelectorAll('.coin,.note').length?'none':''};
+    sp.coins.forEach(v=>{const c=coinEl(v);c.dataset.v=v;c.onclick=()=>{if(tray.querySelectorAll('.coin,.note').length>=24)return;beep(880,.05,'triangle',.06);total+=v;const t=coinEl(v);t.onclick=()=>{total-=v;t.remove();upd()};tray.appendChild(t);upd()};bank.appendChild(c)});
     const ok=h('button','btn go',r.pay?'거스름돈 주기 ✔':'돈 내기 ✔');
     ok.onclick=()=>{if(total===need){good();msg.textContent='';ok.disabled=true;setTimeout(()=>{k++;next()},700)}
       else{bad();shake(tray);const hn=cx.miss();msg.innerHTML=(LV==='hard'?'금액이 맞지 않아요!':total<need?'돈이 모자라요!':'돈이 너무 많아요!')+(hn?` <b>${need}원</b>을 만들어요.`:'')}};
