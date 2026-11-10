@@ -73,7 +73,7 @@ h2{font-size:26px;margin:6px 0}
 .tok.lift{opacity:.3}
 .tok.used{cursor:default;box-shadow:none;background:#f3fff4;font-size:26px;padding:4px 8px;min-width:0}
 .tok.used.txt{font-size:18px}
-.ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-50%) scale(1.12) rotate(-4deg);box-shadow:0 12px 24px #0003}
+.dragghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-50%) scale(1.12) rotate(-4deg);box-shadow:0 12px 24px #0003}
 .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}
 .bin{border-radius:22px;background:#fff;border:3px solid color-mix(in srgb,var(--main) 35%,#fff);min-height:130px;padding:8px;transition:background .2s}
 .bin .bh{font-size:22px;padding:6px;border-radius:14px;background:color-mix(in srgb,var(--main) 14%,#fff);text-align:center}
@@ -227,7 +227,7 @@ function dnd(root,onDrop,onTap){
   root.addEventListener('pointerdown',e=>{
     const t=e.target.closest('.tok');if(!t||t.classList.contains('used')||!root.contains(t))return;
     e.preventDefault();const sx=e.clientX,sy=e.clientY;let gh=null;
-    const mv=ev=>{if(!gh&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>10){gh=t.cloneNode(true);gh.classList.add('ghost');gh.classList.remove('sel');gh.style.width=t.offsetWidth+'px';document.body.appendChild(gh);t.classList.add('lift')}
+    const mv=ev=>{if(!gh&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>10){gh=t.cloneNode(true);gh.classList.add('dragghost');gh.classList.remove('sel');gh.style.width=t.offsetWidth+'px';document.body.appendChild(gh);t.classList.add('lift')}
       if(gh){gh.style.left=ev.clientX+'px';gh.style.top=ev.clientY+'px'}};
     const up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);
       if(gh){gh.remove();t.classList.remove('lift');const u=document.elementFromPoint(ev.clientX,ev.clientY);const bin=u&&u.closest('.bin');if(bin&&root.contains(bin)){if(sel){sel.classList.remove('sel');sel=null}onDrop(t,bin)}}
