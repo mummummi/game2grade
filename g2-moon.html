@@ -353,6 +353,9 @@ const THEME={
 
 </script>
 <script>
+/* 🧸 분위기 소품 (문제와 상관없는 기물 · 눌러 보면 설명만 나와요) */
+const DECOR=[[["w", "🪐", "행성 포스터", 1020, 250, 115, "태양계 행성들이 그려진 포스터예요."], ["f", "👢", "우주 장화", 90, 735, 125, "무거운 우주 장화예요. 달에서 신으면 폴짝폴짝!"], ["f", "📦", "보급 상자", 1020, 735, 125, "\"우주 식량\" 이라고 적힌 상자예요. 잠겨 있지 않지만 비어 있어요."]], [["w", "🛰️", "위성 화면", 1020, 525, 115, "인공위성이 지구를 도는 모습이 보여요."], ["f", "☕", "우주 커피", 90, 735, 125, "빨대로 마시는 우주 커피 팩이에요."], ["w", "🌍", "지구 창문", 540, 525, 115, "창밖으로 파란 지구가 보여요. 우리 집도 저기 있겠죠?"]], [["f", "🌑", "월석 조각", 90, 735, 125, "회색 달 돌멩이예요. 생각보다 가벼워요."], ["w", "⭐", "별 지도", 510, 525, 115, "밤하늘 별자리 지도가 붙어 있어요."], ["f", "🧰", "정비 도구", 855, 735, 125, "로켓을 고치는 도구예요. 지금은 쓸 일이 없어요."]]];
+DECOR.forEach((list,ri)=>{const r=THEME.rooms[ri];if(!r)return;list.forEach((d,k)=>r.objects.push({id:'deco'+k,deco:1,title:d[1]+' '+d[2],art:(d[0]==='f'?E(d[3],d[4]+d[5]*0.42,d[5]*0.42,d[5]*0.09,'#0000002e'):'')+EM(d[3],d[4],d[1],d[5],'filter="url(#sh)"'),html:'<div class="box">'+d[6]+'</div>'}))});
 THEME.rooms.forEach((r,ri)=>r.objects.forEach(o=>{if(!o._rid){o.id='r'+ri+'_'+o.id;o._rid=1}}));/* 방마다 물건 id를 따로 → 다른 방의 같은 이름 문/물건이 '이미 푼 것'으로 처리되는 문제 방지 */
 try{const U=S.used||{};if(Object.keys(U).some(k=>!/^[pu]_r\d+_/.test(k))){THEME.rooms.forEach((r,ri)=>r.objects.forEach(o=>{const base=o.id.replace(/^r\d+_/,'');['p_','u_'].forEach(pf=>{if(U[pf+base]&&(ri<S.room||(base!=='door'&&ri<=S.room)))U[pf+o.id]=1})}));Object.keys(U).forEach(k=>{if(!/^[pu]_r\d+_/.test(k))delete U[k]});S.used=U;save()}}catch(e){}/* 예전 저장 기록 옮기기 */
 TH=THEME;if(GRADE<=2)document.body.classList.add('kids');S.max=S.max||0;render();
