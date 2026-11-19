@@ -65,6 +65,7 @@ button{font-family:inherit;font-size:18px;border:0;border-radius:12px;padding:10
 .opts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px}
 .opt{background:var(--panel2);color:var(--ink);border:2px solid var(--line);min-width:110px;padding:12px 16px;font-size:18px}
 .opt.big{font-size:34px;min-width:80px}
+.mopt.on,.mr.on{border-color:var(--gold)!important;background:#ffd54f33!important}.mlist{display:flex;flex-direction:column;gap:8px;margin:10px auto;max-width:620px}.mrow{display:flex;align-items:center;gap:10px;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:8px 12px}.ml{flex:1;font-size:18px}.ma{opacity:.6}.mr{min-width:150px;background:#ffffff14;color:var(--ink);border:2px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:18px}
 .ordercards{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}
 .ordercards button{background:var(--panel2);color:var(--ink);border:2px solid var(--line);padding:10px 14px;font-size:17px;min-width:90px;position:relative}
 .ordercards button.on{border-color:var(--gold);opacity:.55}
@@ -202,15 +203,17 @@ const norm=v=>String(v).replace(/\s|,/g,'').toLowerCase();
 function lockHTML(k){
   if(k.kind==='dial')return `<div class="dials">${Array.from({length:k.ans.length},(_,i)=>`<div class="dial"><button data-u="${i}">▲</button><div class="d" id="dg${i}">0</div><button data-dn="${i}">▼</button></div>`).join('')}</div><div class="center"><button class="btn" id="lkOk">열기</button></div>`;
   if(k.kind==='text')return `<form class="lockform" id="lf"><input id="li" maxlength="${k.max||14}" placeholder="${k.ph||''}" autocomplete="off"><button class="btn">열기</button></form>`;
-  if(k.kind==='dir')return `<div class="seqshow" id="sq"></div><div class="pad">${[['U','⬆️'],['D','⬇️'],['L','⬅️'],['R','➡️']].map(([v,e])=>`<button data-v="${v}">${e}</button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='color')return `<div class="seqshow" id="sq"></div><div class="pad">${k.opts.map(([v,c])=>`<button class="c" data-v="${v}" style="background:${c}" title="${v}"></button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='keys')return `<div class="seqshow" id="sq"></div><div class="keys">${(k.opts||['도','레','미','파','솔','라','시']).map(v=>`<button data-v="${v}">${v}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">⌫ 지우기</button> <button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='choice')return `<div class="opts">${k.opts.map(o=>`<button class="opt${k.big?' big':''}" data-v="${o}">${o}</button>`).join('')}</div>`;
-  if(k.kind==='order')return `<div class="ordercards">${k.opts.map(o=>`<button data-v="${o}">${o}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">다시 고르기</button></div>`;
+  if(k.kind==='dir')return `<div class="seqshow" id="sq"></div><div class="pad">${[['U','⬆️'],['D','⬇️'],['L','⬅️'],['R','➡️']].map(([v,e])=>`<button data-v="${String(v).replace(/"/g,'&quot;')}">${e}</button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='color')return `<div class="seqshow" id="sq"></div><div class="pad">${k.opts.map(([v,c])=>`<button class="c" data-v="${String(v).replace(/"/g,'&quot;')}" style="background:${c}" title="${v}"></button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='keys')return `<div class="seqshow" id="sq"></div><div class="keys">${(k.opts||['도','레','미','파','솔','라','시']).map(v=>`<button data-v="${String(v).replace(/"/g,'&quot;')}">${v}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">⌫ 지우기</button> <button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='choice')return `<div class="opts">${k.opts.map(o=>`<button class="opt${k.big?' big':''}" data-v="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div>`;
+  if(k.kind==='order')return `<div class="ordercards">${k.opts.map(o=>`<button data-v="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">다시 고르기</button></div>`;
+  if(k.kind==='multi')return `<div class="opts">${k.opts.map(o=>`<button class="opt mopt${k.big?' big':''}" data-m="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div><div class="center muted" style="margin-top:6px">맞는 것을 <b>모두</b> 눌러 고른 뒤 확인을 눌러요</div><div class="center"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='match'||k.kind==='sort'){const ch=k.kind==='match'?k.right:k.bins;return `<div class="mlist">${k.left.map((l,i)=>`<div class="mrow"><span class="ml">${l}</span><span class="ma">${k.kind==='match'?'↔':'→'}</span><button class="mr" data-i="${i}">❔</button></div>`).join('')}</div><div class="center muted">${k.kind==='match'?'오른쪽 칸을 눌러 짝을 바꿔요':'칸을 눌러 어디에 들어갈지 바꿔요'} (${ch.join(' · ')})</div><div class="center"><button class="btn" id="lkOk">확인</button></div>`}
 }
 function bindLock(k,ok){
   const box=$('mbody'),msg=$('lm');let seq=[];
-  const judge=v=>{const good=k.kind==='choice'?v===k.ans:Array.isArray(k.ans)?norm(v)===norm(k.ans.join('')):[k.ans,...(k.alts||[])].some(a=>norm(v)===norm(a));
+  const judge=v=>{const good=v===true?true:v===false?false:k.kind==='choice'?v===k.ans:Array.isArray(k.ans)?norm(v)===norm(k.ans.join('')):[k.ans,...(k.alts||[])].some(a=>norm(v)===norm(a));
     if(good){msg.className='msg good';msg.textContent='✅ 철컥! 열렸다!';tone(660);setTimeout(()=>tone(990),120);box.querySelectorAll('button,input').forEach(x=>x.disabled=true);setTimeout(ok,FAST?0:900)}
     else{S.wrong++;save();msg.className='msg bad';msg.textContent=k.bad||'❌ 열리지 않는다…';tone(150,.3);const c=$('mcard');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');if(k.kind!=='text'){seq=[];show()}}};
   const show=()=>{const sq=box.querySelector('#sq');if(sq)sq.innerHTML=seq.map(v=>k.kind==='color'?`<span style="background:${k.opts.find(o=>o[0]===v)[1]}"></span>`:k.kind==='dir'?`<span>${{U:'⬆️',D:'⬇️',L:'⬅️',R:'➡️'}[v]}</span>`:`<span>${v}</span>`).join('');
@@ -219,7 +222,9 @@ function bindLock(k,ok){
   if(k.kind==='text'){$('lf').onsubmit=e=>{e.preventDefault();const v=$('li').value;if(v.trim())judge(v)}}
   if(['dir','color','keys'].includes(k.kind)){box.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{if(seq.length>=(k.ans.length+3))return;seq.push(b.dataset.v);if(k.kind==='keys')tone(NOTE[b.dataset.v]||440,.4);else tone(600,.05);show()});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq.pop();show()});$('lkOk').onclick=()=>judge(seq.join(''))}
   if(k.kind==='choice')box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>judge(b.dataset.v));
-  if(k.kind==='order'){box.querySelectorAll('.ordercards [data-v]').forEach(b=>b.onclick=()=>{if(seq.includes(b.dataset.v))return;seq.push(b.dataset.v);tone(600,.05);show();if(seq.length===k.opts.length)judge(seq.join(''))});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq=[];show()})}
+  if(k.kind==='multi'){const on=new Set();const upd=()=>box.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',on.has(b.dataset.m)));box.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const v=b.dataset.m;on.has(v)?on.delete(v):on.add(v);tone(600,.04);upd()});box._set=a=>{a.forEach(v=>on.add(String(v)));upd()};$('lkOk').onclick=()=>{const A=k.ans.map(String);const g=on.size===A.length&&A.every(v=>on.has(v));if(!g){on.clear();upd()}judge(g)}}
+  if(k.kind==='match'||k.kind==='sort'){const ch=k.kind==='match'?k.right:k.bins;const st=k.left.map(()=>-1);const upd=()=>box.querySelectorAll('.mr').forEach(b=>{const i=+b.dataset.i;b.textContent=st[i]<0?'❔':ch[st[i]];b.classList.toggle('on',st[i]>=0)});box.querySelectorAll('.mr').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;st[i]=(st[i]+1)%ch.length;tone(520+st[i]*60,.04);upd()});box._set=a=>{a.forEach((v,i)=>st[i]=ch.indexOf(v));upd()};$('lkOk').onclick=()=>{if(st.some(x=>x<0)){msg.className='msg bad';msg.textContent='❔ 아직 정하지 않은 칸이 있어요.';return}judge(st.every((x,i)=>ch[x]===k.ans[i]))}}
+  if(k.kind==='order'){box.querySelectorAll('.ordercards [data-v]').forEach(b=>b.onclick=()=>{if(seq.includes(b.dataset.v))return;seq.push(b.dataset.v);tone(600,.05);show();if(seq.length===(Array.isArray(k.ans)?k.ans.length:k.opts.length))judge(seq.join('\u0001')===(Array.isArray(k.ans)?k.ans:[]).join('\u0001')||(!Array.isArray(k.ans)&&norm(seq.join(''))===norm(k.ans)))});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq=[];show()})}
 }
 /* ═══════ 물건 조사 ═══════ */
 const FAST=QS.get('fast')==='1';
@@ -300,7 +305,7 @@ window.__auto=async function(){const out=[];const sl=ms=>new Promise(r=>setTimeo
     for(const o of r.objects){if(!avail(o)||solved(o)&&!o.door)continue;if(o.need&&!has(o.need)&&!S.used['u_'+o.id])continue;if(o.door&&!o.lock&&!(o.needs||[]).every(flag))continue;
       const room=S.room;if(o.need&&!S.used['u_'+o.id])SEL=o.need;activate(o);await sl(5);
       if(o.lock&&!solved(o)){const k=val(o.lock);const v=Array.isArray(k.ans)?k.ans:k.ans;
-        if(k.kind==='dial'){$('mbody')._set(v);$('lkOk').click()}else if(k.kind==='text'){$('li').value=v;$('lf').requestSubmit()}
+        if(['dial','multi','match','sort'].includes(k.kind)){$('mbody')._set(v);$('lkOk').click()}else if(k.kind==='text'){$('li').value=v;$('lf').requestSubmit()}
         else if(k.kind==='choice'){[...document.querySelectorAll('#mbody .opt')].find(b=>b.dataset.v===k.ans).click()}
         else{const arr=Array.isArray(v)?v:String(v).split('');for(const x of arr)[...document.querySelectorAll('#mbody [data-v]')].find(b=>b.dataset.v===x).click();$('lkOk')&&$('lkOk').click()}
         await sl(30)}
@@ -355,6 +360,52 @@ const THEME={
   ]};
 
 </script>
+<script>/* 🧩 퍼즐 재설계 */
+(function(){const P=(function(){
+/* 2학년 · 출동! 꼬마 소방서 — 화재 대피 순서, 장비의 쓰임, 길이(m·cm) 더하기, 신호표 읽기, 걸린 시간, 마을 지도 길 찾기 */
+const EV=L(['🗣️ "불이야!" 크게 외쳐요','🧣 젖은 수건으로 코와 입을 막아요','🧎 낮은 자세로 계단을 이용해 밖으로 나가요'],['🗣️ "불이야!" 크게 외쳐요','🧣 젖은 수건으로 코와 입을 막아요','🧎 낮은 자세로 계단을 이용해 밖으로 나가요','📞 밖에서 119에 신고해요'],['🔔 화재 경보기를 눌러요','🗣️ "불이야!" 크게 외쳐요','🧣 젖은 수건으로 코와 입을 막아요','🧎 낮은 자세로 계단을 이용해 밖으로 나가요','📞 밖에서 119에 신고해요']);
+const EVD=L(['🛗 엘리베이터를 타요'],['🛗 엘리베이터를 타요','🧸 장난감을 챙겨요'],['🛗 엘리베이터를 타요','🧸 장난감을 챙겨요','🛏️ 침대 밑에 숨어요']);
+const GEAR=L([['⛑️ 헬멧','머리를 보호해요'],['🧥 방화복','뜨거운 열을 막아요'],['🫁 산소통','연기 속에서 숨을 쉬어요']],[['⛑️ 헬멧','머리를 보호해요'],['🧥 방화복','뜨거운 열을 막아요'],['🫁 산소통','연기 속에서 숨을 쉬어요'],['🥾 소방 장화','발을 보호해요']],[['⛑️ 헬멧','머리를 보호해요'],['🧥 방화복','뜨거운 열을 막아요'],['🫁 산소통','연기 속에서 숨을 쉬어요'],['🥾 소방 장화','발을 보호해요'],['🪓 손도끼','잠긴 문을 열어요'],['🔦 손전등','어두운 곳을 비춰요']]);
+const HO=L([[1,20],[2,50]],[[2,35],[1,40]],[[3,75],[2,60],[1,85]]);const HCM=HO.reduce((a,h)=>a+h[0]*100+h[1],0);const HANS=String(HCM);
+const SIG=[['화재','삐뽀','삐뽀','삐뽀'],['구조','앵','앵','삐뽀'],['구급','삐뽀','앵','삐뽀']];
+const TODAY=L('화재','구조','구급');const SANS=SIG.find(s=>s[0]===TODAY).slice(1);
+const T1=L([2,10],[3,40],[4,45]);const T2=L([2,25],[3,58],[5,12]);const MANS=String(T2[0]*60+T2[1]-(T1[0]*60+T1[1]));
+const MAP=L(['🚒🟩🟩🌳','🌳🌳🟩🏠','🏠🟩🟩🌳','🏠🔥🌳🌳'],['🚒🟩🟩🟩🌳','🌳🌳🌳🟩🏠','🏠🟩🟩🟩🌳','🏠🟩🌳🌳🌳','🏠🟩🟩🔥🌳'],['🌳🚒🟩🌳🏠🌳','🏠🌳🟩🟩🟩🌳','🌳🟩🟩🌳🟩🏠','🌳🟩🌳🌳🟩🌳','🌳🟩🟩🟩🟩🌳','🏠🌳🌳🌳🔥🏠']);
+const MANSD=L('RRDDLD','RRRDDLLDDRR','RDRRDDDD');
+return {
+ story:'소방서 견학을 온 날, 갑자기 "따르릉!" 출동 벨이 울렸어요! 그런데 소방관 아저씨들은 모두 훈련을 나갔어요. 🔔<br>소방견 <b>"달마"</b>가 짖어요. "멍멍! 우리가 대신 출동 준비를 하자! TV, 사다리, 비상 전화에 꼭 필요한 정보가 있어!"',
+ rooms:[
+ {o:{
+  deco2:{title:'📺 안전 교육 TV',html:()=>`<div class="box">TV에서 화재 대피 교육이 나와요.</div>${EV.map((e,i)=>`<div class="paper" style="font-size:19px">${i+1}. ${e}</div>`).join('')}<div class="paper" style="font-size:19px">⚠️ 불이 나면 <b>엘리베이터는 절대 타지 않아요.</b></div>`},
+  quiz:{title:'📋 안전 게시판',html:'<div class="box">게시판에 "화재 대피 순서" 카드를 붙여야 해요. 그런데 <b>잘못된 행동 카드</b>도 섞여 있어요! 올바른 카드만 순서대로 붙여요.</div>',lock:()=>({kind:'order',ans:EV,opts:[...EV,...EVD].sort(),q:'올바른 대피 순서대로 누르세요'}),give:'helmet',done:'게시판 뒤에서 ⛑️ 소방 헬멧을 찾았어요!'},
+  locker:{title:'🧥 장비 사물함',need:'helmet',locked:'사물함에 헬멧 모양 자물쇠가 걸려 있어요.',html:'<div class="box">⛑️ 헬멧을 대자 사물함이 열렸어요. 장비마다 쓰임 이름표를 달아 주세요.</div>',lock:()=>({kind:'match',left:GEAR.map(g=>g[0]),right:GEAR.map(g=>g[1]).slice().sort(),ans:GEAR.map(g=>g[1]),q:'장비의 쓰임을 골라요'}),set:'gear',done:'장비 준비 완료! 차고 문이 열려요.'},
+  door:{when:['gear'],pre:'🔒 장비 준비를 먼저 마쳐요.'},
+ },hints:()=>L(['TV를 눌러 대피 순서를 봐요.','엘리베이터 카드는 빼요.','산소통은 숨 쉬는 데 써요.'],['TV에 나온 4단계를 차례로 놓아요.','장난감은 챙기지 않아요.','장화는 발을 보호해요.'],['경보기를 누르는 것이 가장 먼저예요.','손도끼는 잠긴 문을 열 때 써요.'])},
+ {o:{
+  deco0:{title:'🪜 사다리에 걸린 호스 조각',html:()=>`<div class="box">사다리에 호스 조각들이 걸려 있어요. 이어 붙이면 하나의 긴 호스가 돼요.</div>${HO.map((h,i)=>`<div class="paper" style="font-size:22px">조각 ${i+1}: <b>${h[0]} m ${h[1]} cm</b></div>`).join('')}`},
+  hose:{title:'🌀 감긴 소방 호스',html:'<div class="box">호스 감개에 "<b>사다리에 걸린 조각을 모두 이은 길이</b>를 cm로 입력하시오"라고 적혀 있어요. (1 m = 100 cm)</div>',lock:()=>({kind:'dial',ans:HANS,q:'이은 호스의 길이는 몇 cm?'}),give:'hose',done:'호스를 연결하자 🧯 소화기가 툭 떨어졌어요!'},
+  deco1:{title:'🧯 소화기 옆 메모',html:()=>`<div class="box">메모: "오늘 들어온 신고는 <b>${TODAY}</b> 신고예요."</div>`},
+  deco2:{title:'🪖 헬멧 걸이 신호표',html:()=>`<div class="box">헬멧 걸이 옆에 사이렌 신호표가 붙어 있어요.</div>${VIS.table(['신고','신호'],SIG.map(s=>[s[0],s.slice(1).join(' ')]))}`},
+  siren:{title:'🚨 사이렌',need:'hose',locked:'사이렌 상자를 열려면 소화기 손잡이를 끼워야 해요.',html:'<div class="box">🧯 손잡이를 끼웠어요. <b>오늘 들어온 신고</b>에 맞는 신호를 신호표에서 찾아 울려요.</div>',lock:()=>({kind:'keys',ans:SANS,opts:['삐뽀','앵'],q:'신호를 차례로 누르세요'}),set:'siren',done:'삐뽀삐뽀~ 사이렌이 울려 퍼져요!'},
+  door:{when:['siren'],pre:'🔒 사이렌을 먼저 울려요.'},
+ },hints:()=>L(['1 m 20 cm는 120 cm예요.','120 + 250 = 370','메모에서 신고 종류를 확인해요.'],['2 m 35 cm = 235 cm, 1 m 40 cm = 140 cm',HANS+' cm','구조 신호: 앵 앵 삐뽀'],['조각 3개를 모두 cm로 바꿔 더해요.','신호표에서 구급 줄을 찾아요.'])},
+ {o:{
+  deco0:{title:'📞 비상 전화 기록',html:()=>`<div class="box">전화기 화면에 신고가 들어온 시각이 남아 있어요.</div>${VIS.clock(T1[0],T1[1],160)}`},
+  clock:{title:'🕰️ 도착 시계',html:()=>`<div class="box">소방차가 불난 곳에 도착할 시각이에요. 출동 보고서에 <b>신고부터 도착까지 몇 분 걸렸는지</b> 써야 해요. (신고 시각은 비상 전화에!)</div>${VIS.clock(T2[0],T2[1],160)}`,lock:()=>({kind:'dial',ans:MANS,q:'걸린 시간은 몇 분?'}),give:'key',done:'보고서를 쓰자 🔑 소방차 열쇠가 나왔어요!'},
+  deco1:{title:'🐕 소방견 바둑이의 지도',html:()=>`<div class="box">바둑이가 마을 지도를 물고 왔어요. 🟩는 길, 🌳🏠는 지나갈 수 없어요. 🚒에서 🔥까지 <b>길로만</b>, 가장 짧은 길로 가요.</div><div class="paper center" style="font-size:30px;line-height:1.3">${MAP.map(r=>`<div>${r}</div>`).join('')}</div>`},
+  go:{need:'key',locked:'소방차 열쇠가 필요해요.',html:'<div class="box">🔑 시동을 걸었어요! 부릉부릉~ <b>바둑이의 지도</b>를 보고 불난 곳까지 운전해요.</div>',lock:()=>({kind:'dir',ans:MANSD,q:'가는 길을 화살표로 누르세요'})},
+ },hints:()=>L(['비상 전화를 눌러 신고 시각을 봐요.','2시 10분에서 2시 25분까지는 15분이에요.','➡️ ➡️ ⬇️ ⬇️ …'],['같은 3시이니 분끼리 빼요: 58 - 40','3시 40분부터 3시 58분까지 '+MANS+'분','지도에서 막힌 곳을 피해 한 칸씩 가요.'],['4시 45분부터 5시까지 15분, 5시부터 5시 12분까지 12분','지도를 손가락으로 따라가요.'])},
+ ]};
+
+})();
+const KEYS=['lock','give','set','need','when','needs','done','locked','pre','after','consume','useMsg','html','hideWhen'];
+['story','endText','title'].forEach(k=>{if(P[k])THEME[k]=P[k]});if(P.items)Object.assign(THEME.items,P.items);
+(P.rooms||[]).forEach((pr,ri)=>{const r=THEME.rooms[ri];if(!r||!pr)return;if(pr.hints)r.hints=pr.hints;if(pr.tip)r.tip=pr.tip;if(pr.name)r.name=pr.name;
+ Object.entries(pr.o||{}).forEach(([id,pt])=>{let o=r.objects.find(x=>x.id===id);if(!o){o={id};r.objects.push(o)}
+  if(pt._clear!==false&&!o.door)KEYS.forEach(k=>delete o[k]);if(o.door)['lock','need','when','needs','pre','locked','html'].forEach(k=>{if(k in pt)delete o[k]});
+  Object.assign(o,pt);delete o._clear;if(/^deco/.test(id))delete o.deco})});
+})();
+/* 🧩 끝 */</script>
 <script>
 const DART=d=>{const [k,e,t,x,y,S]=d;
 if(k==='f')return E(x,y+S*0.4,S*0.42,S*0.09,'#0000002e')+EM(x,y,e,S*0.85,'filter="url(#sh)"');
@@ -363,9 +414,9 @@ if(k==='p'){const w=S*0.95,h=S*0.95;return C(x,y-h/2-10,4,'#555')+P(`M${x} ${y-h
 const sw=S*1.1;return EM(x,y-S*0.12,e,S*0.68,'filter="url(#sh)"')+R(x-sw/2,y+S*0.24,sw,13,'#8d5a34','rx="3" filter="url(#sh)"')+R(x-sw/2+12,y+S*0.24+13,9,20,'#5e3a1f','rx="2"')+R(x+sw/2-21,y+S*0.24+13,9,20,'#5e3a1f','rx="2"')};
 /* 🧸 분위기 소품 (문제와 상관없는 기물 · 눌러 보면 설명만 나와요) */
 const DECOR=[[["p", "🏆", "안전 표창장", 1050, 250, 150, "\"우리 마을 안전 지킴이 소방서\" 표창장이에요."], ["f", "🥾", "소방 장화", 90, 735, 125, "무거운 소방 장화가 나란히 놓여 있어요."], ["s", "📺", "안전 교육 TV", 480, 525, 150, "\"불이 나면 낮은 자세로!\" 영상이 나와요."]], [["f", "🪜", "사다리", 90, 735, 125, "높은 곳에 올라가는 사다리예요. 지금은 접혀 있어요."], ["f", "🧯", "여분 소화기", 765, 735, 125, "점검 완료 스티커가 붙은 소화기예요."], ["s", "🪖", "헬멧 걸이", 90, 250, 150, "빨간 소방 헬멧이 줄줄이 걸려 있어요."]], [["s", "📞", "비상 전화", 660, 250, 150, "119 신고가 들어오는 전화예요. 지금은 조용해요."], ["f", "🐕", "소방견 바둑이", 90, 735, 125, "소방서의 마스코트 강아지예요. 꼬리를 흔들어요."], ["f", "☕", "식은 커피", 495, 735, 125, "출동하느라 다 못 마신 커피예요."]]];
-DECOR.forEach((list,ri)=>{const r=THEME.rooms[ri];if(!r)return;list.forEach((d,k)=>r.objects.push({id:'deco'+k,deco:1,title:d[1]+' '+d[2],art:DART(d),html:'<div class="box">'+d[6]+'</div>'}))});
+DECOR.forEach((list,ri)=>{const r=THEME.rooms[ri];if(!r)return;list.forEach((d,k)=>{const ex=r.objects.find(o=>o.id==='deco'+k);if(ex){if(!ex.art)ex.art=DART(d);if(!ex.title)ex.title=d[1]+' '+d[2];return}r.objects.push({id:'deco'+k,deco:1,title:d[1]+' '+d[2],art:DART(d),html:'<div class="box">'+d[6]+'</div>'})})});
 /* 🖼️ AI 배경 그림 */
-const ARTMAP={"rooms": [{"quiz": [47, 167, 360, 527, {"fit": 1, "pad": 0.8}], "locker": [647, 353, 333, 447], "door": [1353, 200, 180, 620], "deco0": [493, 253, 167, 140], "deco1": [1007, 687, 127, 113], "deco2": [1100, 120, 193, 213]}, {"hose": [513, 220, 187, 227], "siren": [993, 173, 220, 113], "door": [1353, 200, 180, 620], "deco0": [340, 320, 167, 500], "deco1": [1180, 573, 100, 207], "deco2": [900, 413, 333, 120]}, {"clock": [73, 140, 327, 467, {"clip": [260, 300, 98, 237, 373, 138]}], "go": [1153, 90, 140, 700], "deco0": [600, 513, 140, 100], "deco1": [1007, 660, 187, 220], "deco2": [927, 500, 87, 113]}], "id": "g2-fire"};
+const ARTMAP={"rooms": [{"quiz": [47, 167, 360, 527], "locker": [647, 353, 333, 447], "door": [1353, 200, 180, 620], "deco0": [493, 253, 167, 140], "deco1": [1007, 687, 127, 113], "deco2": [1100, 120, 193, 213]}, {"hose": [513, 220, 187, 227], "siren": [993, 173, 220, 113], "door": [1353, 200, 180, 620], "deco0": [340, 320, 167, 500], "deco1": [1180, 573, 100, 207], "deco2": [900, 413, 333, 120]}, {"clock": [73, 140, 327, 467], "go": [1153, 90, 140, 700], "deco0": [600, 513, 140, 100], "deco1": [1007, 660, 187, 220], "deco2": [927, 500, 87, 113]}], "id": "g2-fire"};
 const AMbox=a=>{const ns='http://www.w3.org/2000/svg';const sv=document.createElementNS(ns,'svg');sv.setAttribute('width','1600');sv.setAttribute('height','900');sv.style.cssText='position:absolute;left:-9999px;top:0';sv.innerHTML=DEFS+a;document.body.appendChild(sv);let b={x:0,y:0,width:1,height:1};try{const g=document.createElementNS(ns,'g');while(sv.childNodes.length>1)g.appendChild(sv.childNodes[1]);sv.appendChild(g);const r=g.getBBox();b={x:r.x,y:r.y,width:r.width||1,height:r.height||1}}catch(e){}sv.remove();return b};
 ARTMAP.rooms.forEach((hot,ri)=>{const r=THEME.rooms[ri];if(!r||!hot)return;const src='art/'+ARTMAP.id+'_'+(ri+1)+'.webp';
  r.bg=()=>`<image href="${src}" x="0" y="0" width="1600" height="900" preserveAspectRatio="xMidYMid slice"/>`;

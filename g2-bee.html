@@ -65,6 +65,7 @@ button{font-family:inherit;font-size:18px;border:0;border-radius:12px;padding:10
 .opts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px}
 .opt{background:var(--panel2);color:var(--ink);border:2px solid var(--line);min-width:110px;padding:12px 16px;font-size:18px}
 .opt.big{font-size:34px;min-width:80px}
+.mopt.on,.mr.on{border-color:var(--gold)!important;background:#ffd54f33!important}.mlist{display:flex;flex-direction:column;gap:8px;margin:10px auto;max-width:620px}.mrow{display:flex;align-items:center;gap:10px;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:8px 12px}.ml{flex:1;font-size:18px}.ma{opacity:.6}.mr{min-width:150px;background:#ffffff14;color:var(--ink);border:2px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:18px}
 .ordercards{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}
 .ordercards button{background:var(--panel2);color:var(--ink);border:2px solid var(--line);padding:10px 14px;font-size:17px;min-width:90px;position:relative}
 .ordercards button.on{border-color:var(--gold);opacity:.55}
@@ -202,15 +203,17 @@ const norm=v=>String(v).replace(/\s|,/g,'').toLowerCase();
 function lockHTML(k){
   if(k.kind==='dial')return `<div class="dials">${Array.from({length:k.ans.length},(_,i)=>`<div class="dial"><button data-u="${i}">▲</button><div class="d" id="dg${i}">0</div><button data-dn="${i}">▼</button></div>`).join('')}</div><div class="center"><button class="btn" id="lkOk">열기</button></div>`;
   if(k.kind==='text')return `<form class="lockform" id="lf"><input id="li" maxlength="${k.max||14}" placeholder="${k.ph||''}" autocomplete="off"><button class="btn">열기</button></form>`;
-  if(k.kind==='dir')return `<div class="seqshow" id="sq"></div><div class="pad">${[['U','⬆️'],['D','⬇️'],['L','⬅️'],['R','➡️']].map(([v,e])=>`<button data-v="${v}">${e}</button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='color')return `<div class="seqshow" id="sq"></div><div class="pad">${k.opts.map(([v,c])=>`<button class="c" data-v="${v}" style="background:${c}" title="${v}"></button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='keys')return `<div class="seqshow" id="sq"></div><div class="keys">${(k.opts||['도','레','미','파','솔','라','시']).map(v=>`<button data-v="${v}">${v}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">⌫ 지우기</button> <button class="btn" id="lkOk">확인</button></div>`;
-  if(k.kind==='choice')return `<div class="opts">${k.opts.map(o=>`<button class="opt${k.big?' big':''}" data-v="${o}">${o}</button>`).join('')}</div>`;
-  if(k.kind==='order')return `<div class="ordercards">${k.opts.map(o=>`<button data-v="${o}">${o}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">다시 고르기</button></div>`;
+  if(k.kind==='dir')return `<div class="seqshow" id="sq"></div><div class="pad">${[['U','⬆️'],['D','⬇️'],['L','⬅️'],['R','➡️']].map(([v,e])=>`<button data-v="${String(v).replace(/"/g,'&quot;')}">${e}</button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='color')return `<div class="seqshow" id="sq"></div><div class="pad">${k.opts.map(([v,c])=>`<button class="c" data-v="${String(v).replace(/"/g,'&quot;')}" style="background:${c}" title="${v}"></button>`).join('')}<button data-x="1">⌫</button></div><div class="center" style="margin-top:10px"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='keys')return `<div class="seqshow" id="sq"></div><div class="keys">${(k.opts||['도','레','미','파','솔','라','시']).map(v=>`<button data-v="${String(v).replace(/"/g,'&quot;')}">${v}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">⌫ 지우기</button> <button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='choice')return `<div class="opts">${k.opts.map(o=>`<button class="opt${k.big?' big':''}" data-v="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div>`;
+  if(k.kind==='order')return `<div class="ordercards">${k.opts.map(o=>`<button data-v="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div><div class="center"><button class="ghost" data-x="1">다시 고르기</button></div>`;
+  if(k.kind==='multi')return `<div class="opts">${k.opts.map(o=>`<button class="opt mopt${k.big?' big':''}" data-m="${String(o).replace(/"/g,'&quot;')}">${o}</button>`).join('')}</div><div class="center muted" style="margin-top:6px">맞는 것을 <b>모두</b> 눌러 고른 뒤 확인을 눌러요</div><div class="center"><button class="btn" id="lkOk">확인</button></div>`;
+  if(k.kind==='match'||k.kind==='sort'){const ch=k.kind==='match'?k.right:k.bins;return `<div class="mlist">${k.left.map((l,i)=>`<div class="mrow"><span class="ml">${l}</span><span class="ma">${k.kind==='match'?'↔':'→'}</span><button class="mr" data-i="${i}">❔</button></div>`).join('')}</div><div class="center muted">${k.kind==='match'?'오른쪽 칸을 눌러 짝을 바꿔요':'칸을 눌러 어디에 들어갈지 바꿔요'} (${ch.join(' · ')})</div><div class="center"><button class="btn" id="lkOk">확인</button></div>`}
 }
 function bindLock(k,ok){
   const box=$('mbody'),msg=$('lm');let seq=[];
-  const judge=v=>{const good=k.kind==='choice'?v===k.ans:Array.isArray(k.ans)?norm(v)===norm(k.ans.join('')):[k.ans,...(k.alts||[])].some(a=>norm(v)===norm(a));
+  const judge=v=>{const good=v===true?true:v===false?false:k.kind==='choice'?v===k.ans:Array.isArray(k.ans)?norm(v)===norm(k.ans.join('')):[k.ans,...(k.alts||[])].some(a=>norm(v)===norm(a));
     if(good){msg.className='msg good';msg.textContent='✅ 철컥! 열렸다!';tone(660);setTimeout(()=>tone(990),120);box.querySelectorAll('button,input').forEach(x=>x.disabled=true);setTimeout(ok,FAST?0:900)}
     else{S.wrong++;save();msg.className='msg bad';msg.textContent=k.bad||'❌ 열리지 않는다…';tone(150,.3);const c=$('mcard');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');if(k.kind!=='text'){seq=[];show()}}};
   const show=()=>{const sq=box.querySelector('#sq');if(sq)sq.innerHTML=seq.map(v=>k.kind==='color'?`<span style="background:${k.opts.find(o=>o[0]===v)[1]}"></span>`:k.kind==='dir'?`<span>${{U:'⬆️',D:'⬇️',L:'⬅️',R:'➡️'}[v]}</span>`:`<span>${v}</span>`).join('');
@@ -219,7 +222,9 @@ function bindLock(k,ok){
   if(k.kind==='text'){$('lf').onsubmit=e=>{e.preventDefault();const v=$('li').value;if(v.trim())judge(v)}}
   if(['dir','color','keys'].includes(k.kind)){box.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{if(seq.length>=(k.ans.length+3))return;seq.push(b.dataset.v);if(k.kind==='keys')tone(NOTE[b.dataset.v]||440,.4);else tone(600,.05);show()});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq.pop();show()});$('lkOk').onclick=()=>judge(seq.join(''))}
   if(k.kind==='choice')box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>judge(b.dataset.v));
-  if(k.kind==='order'){box.querySelectorAll('.ordercards [data-v]').forEach(b=>b.onclick=()=>{if(seq.includes(b.dataset.v))return;seq.push(b.dataset.v);tone(600,.05);show();if(seq.length===k.opts.length)judge(seq.join(''))});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq=[];show()})}
+  if(k.kind==='multi'){const on=new Set();const upd=()=>box.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',on.has(b.dataset.m)));box.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const v=b.dataset.m;on.has(v)?on.delete(v):on.add(v);tone(600,.04);upd()});box._set=a=>{a.forEach(v=>on.add(String(v)));upd()};$('lkOk').onclick=()=>{const A=k.ans.map(String);const g=on.size===A.length&&A.every(v=>on.has(v));if(!g){on.clear();upd()}judge(g)}}
+  if(k.kind==='match'||k.kind==='sort'){const ch=k.kind==='match'?k.right:k.bins;const st=k.left.map(()=>-1);const upd=()=>box.querySelectorAll('.mr').forEach(b=>{const i=+b.dataset.i;b.textContent=st[i]<0?'❔':ch[st[i]];b.classList.toggle('on',st[i]>=0)});box.querySelectorAll('.mr').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;st[i]=(st[i]+1)%ch.length;tone(520+st[i]*60,.04);upd()});box._set=a=>{a.forEach((v,i)=>st[i]=ch.indexOf(v));upd()};$('lkOk').onclick=()=>{if(st.some(x=>x<0)){msg.className='msg bad';msg.textContent='❔ 아직 정하지 않은 칸이 있어요.';return}judge(st.every((x,i)=>ch[x]===k.ans[i]))}}
+  if(k.kind==='order'){box.querySelectorAll('.ordercards [data-v]').forEach(b=>b.onclick=()=>{if(seq.includes(b.dataset.v))return;seq.push(b.dataset.v);tone(600,.05);show();if(seq.length===(Array.isArray(k.ans)?k.ans.length:k.opts.length))judge(seq.join('\u0001')===(Array.isArray(k.ans)?k.ans:[]).join('\u0001')||(!Array.isArray(k.ans)&&norm(seq.join(''))===norm(k.ans)))});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{seq=[];show()})}
 }
 /* ═══════ 물건 조사 ═══════ */
 const FAST=QS.get('fast')==='1';
@@ -300,7 +305,7 @@ window.__auto=async function(){const out=[];const sl=ms=>new Promise(r=>setTimeo
     for(const o of r.objects){if(!avail(o)||solved(o)&&!o.door)continue;if(o.need&&!has(o.need)&&!S.used['u_'+o.id])continue;if(o.door&&!o.lock&&!(o.needs||[]).every(flag))continue;
       const room=S.room;if(o.need&&!S.used['u_'+o.id])SEL=o.need;activate(o);await sl(5);
       if(o.lock&&!solved(o)){const k=val(o.lock);const v=Array.isArray(k.ans)?k.ans:k.ans;
-        if(k.kind==='dial'){$('mbody')._set(v);$('lkOk').click()}else if(k.kind==='text'){$('li').value=v;$('lf').requestSubmit()}
+        if(['dial','multi','match','sort'].includes(k.kind)){$('mbody')._set(v);$('lkOk').click()}else if(k.kind==='text'){$('li').value=v;$('lf').requestSubmit()}
         else if(k.kind==='choice'){[...document.querySelectorAll('#mbody .opt')].find(b=>b.dataset.v===k.ans).click()}
         else{const arr=Array.isArray(v)?v:String(v).split('');for(const x of arr)[...document.querySelectorAll('#mbody [data-v]')].find(b=>b.dataset.v===x).click();$('lkOk')&&$('lkOk').click()}
         await sl(30)}
@@ -356,6 +361,56 @@ const THEME={
   ]};
 
 </script>
+<script>/* 🧩 퍼즐 재설계 */
+(function(){const P=(function(){
+/* 2학년 · 꿀벌 왕국 — 여러 가지 도형, 곱셈(묶어 세기), 표 읽기, 규칙 찾기, 달력, 세 자리 수 */
+const PL=(n,cx,cy,r)=>{const p=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return `<polygon points="${p.join(' ')}" fill="#ffe082" stroke="#f57f17" stroke-width="3"/>`};
+const SHP=L([3,6,4,6,3,4],[6,5,3,4,6,5,4],[6,5,3,4,6,5,4,3,6]);const SN={3:'삼각형',4:'사각형',5:'오각형',6:'육각형'};
+const BINS=L(['삼각형','사각형','육각형'],['삼각형','사각형','오각형','육각형'],['삼각형','사각형','오각형','육각형']);
+const SL='㉠㉡㉢㉣㉤㉥㉦㉧㉨';
+const shapes=()=>`<svg viewBox="0 0 ${SHP.length*90+10} 110" width="${Math.min(600,SHP.length*90+10)}"><rect width="100%" height="100%" fill="#fff8e1" rx="10"/>${SHP.map((n,i)=>PL(n,50+i*90,48,34)+`<text x="${50+i*90}" y="104" text-anchor="middle" font-size="18">${SL[i]}</text>`).join('')}</svg>`;
+const MU=L([2,5],[4,6],[7,8]);const MANS=String(MU[0]*MU[1]);
+const TB=L([['🌻 해바라기',8],['🌸 벚꽃',5],['🌼 민들레',9]],[['🌻 해바라기',12],['🌸 벚꽃',7],['🌼 민들레',15],['🌷 튤립',9]],[['🌻 해바라기',24],['🌸 벚꽃',17],['🌼 민들레',31],['🌷 튤립',19],['🪻 라벤더',26]]);
+const ST=(()=>{const s=TB.slice().sort((a,b)=>b[1]-a[1]);const T=[[`가장 많이 간 꽃은 ${s[0][0].slice(3)}예요.`,1],[`가장 적게 간 꽃은 ${s[0][0].slice(3)}예요.`,0],[`${TB[0][0].slice(3)}에 간 벌은 ${TB[0][1]}마리예요.`,1],[`${TB[1][0].slice(3)}에 간 벌은 ${TB[1][1]+2}마리예요.`,0],[`${s[0][0].slice(3)}는 ${s[s.length-1][0].slice(3)}보다 ${s[0][1]-s[s.length-1][1]}마리 더 많아요.`,1],[`벌은 모두 ${TB.reduce((a,b)=>a+b[1],0)+1}마리예요.`,0],[`벌은 모두 ${TB.reduce((a,b)=>a+b[1],0)}마리예요.`,1]];return LV==='easy'?T.slice(0,5):T})();
+const DAN=L({p:['U','R','D'],show:6,n:3},{p:['U','R','R','D'],show:8,n:4},{p:['U','U','R','D','L'],show:10,n:5});
+const DSEQ=Array.from({length:DAN.show+DAN.n},(_,i)=>DAN.p[i%DAN.p.length]);const AR={U:'⬆️',D:'⬇️',L:'⬅️',R:'➡️'};
+const CAL=L({m:5,st:3,w:'둘째',d:'수요일'},{m:6,st:1,w:'셋째',d:'토요일'},{m:9,st:5,w:'넷째',d:'화요일'}); // st: 1일의 요일(0=일)
+const WD=['일','월','화','수','목','금','토'];const DI=WD.indexOf(CAL.d[0]);const FIRST=1+((DI-CAL.st+7)%7);const CANS=String(FIRST+7*(['첫째','둘째','셋째','넷째'].indexOf(CAL.w)));
+const calendar=()=>{let cells=Array(CAL.st).fill('');for(let d=1;d<=30;d++)cells.push(d);while(cells.length%7)cells.push('');let rows=[];for(let i=0;i<cells.length;i+=7)rows.push(cells.slice(i,i+7));return VIS.table(WD,rows.map(r=>r.map(c=>c===''?'':c)))};
+const JAR=L([[2,3,4],[3,1,6],[1,5,2]],[[2,4,7],[3,0,5],[2,7,1],[3,2,0]],[[4,0,8],[3,9,9],[4,1,0],[3,8,6],[4,0,1]]);
+const jv=j=>j[0]*100+j[1]*10+j[2];const JN=JAR.map((_,i)=>'꿀단지 '+'가나다라마'[i]);const JS=JAR.map((j,i)=>[jv(j),JN[i]]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+const gem=j=>'🔷'.repeat(j[0])+' '+'🟡'.repeat(j[1])+' '+'🔸'.repeat(j[2]);
+return {
+ story:'꽃밭에서 놀다가 꿀벌을 따라갔더니, 몸이 작아져서 <b>꿀벌 왕국</b>에 들어와 버렸어요! 🐝<br>일벌 <b>"붕붕이"</b>가 날아와요. "여왕님의 수수께끼를 풀면 원래대로 돌아갈 수 있어. 해바라기, 나비 손님, 왕관 장식까지 꼼꼼히 살펴봐!"',
+ rooms:[
+ {o:{
+  comb:{title:'⬡ 벌집 문패',html:()=>`<div class="box">벌집 문패에 여러 도형 조각이 붙어 있어요. 변(곧은 선)의 수를 세어 알맞은 칸에 넣어요.</div><div class="vis">${shapes()}</div>`,lock:()=>({kind:'sort',left:SHP.map((_,i)=>'조각 '+SL[i]),bins:BINS,ans:SHP.map(n=>SN[n]),q:'어떤 도형일까요?'}),give:'honey',done:'문패가 빙글 돌며 🍯 꿀단지가 나왔어요!'},
+  deco0:{title:'🌻 해바라기 꽃밭',html:()=>`<div class="box">해바라기 <b>${MU[0]}송이</b>마다 꿀벌이 <b>${MU[1]}마리</b>씩 앉아 있어요.</div><div class="paper center" style="font-size:24px">${Array(MU[0]).fill('🌻'+'🐝'.repeat(MU[1])).join('<br>')}</div>`},
+  guard:{title:'🐝 경비 벌',need:'honey',locked:'경비 벌이 "꿀이 없으면 대화도 없다!"며 고개를 돌려요.',html:'<div class="box">🍯 꿀을 받은 경비 벌: "암호는 <b>해바라기 꽃밭에 앉은 벌의 수</b>야. 묶어서 세면 빨라!"</div>',lock:()=>({kind:'dial',ans:MANS,q:'벌은 모두 몇 마리?'}),set:'guard',done:'"통과!" 경비 벌이 길을 비켜요.'},
+  door:{when:['guard'],pre:'🔒 경비 벌이 길을 막고 있어요.'},
+ },hints:()=>L(['변이 6개면 육각형이에요.','해바라기 꽃밭을 눌러 세어요.','5씩 2묶음 = 10'],['변이 5개면 오각형!','6씩 4묶음은 6×4',MANS+'마리'],['꼭짓점 수와 변의 수는 같아요.','8씩 7묶음 = 7×8'])},
+ {o:{
+  deco1:{title:'🦋 나비 손님의 표',html:()=>`<div class="box">나비 손님이 "오늘 꿀벌들이 다녀온 꽃"을 표로 정리해 줬어요.</div>${VIS.table(['꽃','다녀온 벌 (마리)'],TB.map(t=>[t[0],t[1]]))}`},
+  board:{title:'📋 꿀벌 출석부',html:'<div class="box">출석부 아래에 문제가 있어요. "<b>나비 손님의 표</b>를 보고 맞는 말을 모두 골라라."</div>',lock:()=>({kind:'multi',ans:ST.filter(s=>s[1]).map(s=>s[0]),opts:ST.map(s=>s[0]),q:'표와 맞는 말을 모두 고르세요'}),give:'pollen',done:'출석부가 반짝! 🌼 꽃가루 공을 받았어요.'},
+  dance:{need:'pollen',locked:'춤 무대에 올라가려면 꽃가루 공을 들고 있어야 해요.',html:()=>`<div class="box">🌼 꿀벌들이 꽃 위치를 알려 주는 춤을 춰요. 춤은 <b>규칙</b>대로 반복돼요. 다음 동작 <b>${DAN.n}개</b>를 이어서 춰요!</div><div class="paper center" style="font-size:34px">${DSEQ.slice(0,DAN.show).map(c=>AR[c]).join(' ')} ${'❓'.repeat(DAN.n)}</div>`,lock:()=>({kind:'dir',ans:DSEQ.slice(DAN.show).join(''),q:'이어질 동작을 누르세요'})},
+ },hints:()=>L(['표에서 가장 큰 수를 찾아요.','틀린 말은 수가 표와 달라요.','⬆️ ➡️ ⬇️ 가 반복돼요.'],['모두 몇 마리인지 더해 봐요: '+TB.reduce((a,b)=>a+b[1],0),'벚꽃은 '+TB[1][1]+'마리예요.','⬆️ ➡️ ➡️ ⬇️ 반복!'],['차이는 큰 수에서 작은 수를 빼요.','반복되는 묶음이 5개 동작이에요.'])},
+ {o:{
+  deco1:{title:'🛋️ 꽃잎 소파 위 초대장',html:()=>`<div class="box">소파 위에 초대장이 있어요: "여왕님 생일 잔치는 <b>${CAL.m}월 ${CAL.w} ${CAL.d}</b>입니다."</div>`},
+  cal:{title:'📅 왕국 달력',html:()=>`<div class="box">${CAL.m}월 달력이에요. 잔치 날짜를 찾아 입력하면 왕관 조각이 나와요. (초대장은 소파 위에!)</div>${calendar()}`,lock:()=>({kind:'dial',ans:CANS.padStart(2,'0'),q:'잔치는 며칠?'}),give:'crown',done:'달력 뒤에서 👑 왕관 조각을 찾았어요!'},
+  deco0:{title:'👑 왕관 장식 설명',html:'<div class="box">왕관 장식판에 보석의 값이 적혀 있어요.</div><div class="paper center" style="font-size:24px">🔷 = 100 &nbsp; 🟡 = 10 &nbsp; 🔸 = 1</div>'},
+  queen:{need:'crown',locked:'여왕님: "왕관 조각을 가져오면 마지막 문제를 내지."',html:()=>`<div class="box">👑 여왕벌: "꿀단지에 보석이 붙어 있지. 보석으로 나타낸 수가 <b>큰 꿀단지부터</b> 놓으면 너희를 돌려보내 주마." (보석 값은 왕관 장식에)</div>${JAR.map((j,i)=>`<div class="paper" style="font-size:22px">${JN[i]}: ${gem(j)}</div>`).join('')}`,lock:()=>({kind:'order',ans:JS,opts:JN,q:'큰 수의 꿀단지부터 누르세요'})},
+ },hints:()=>L(['초대장은 꽃잎 소파 위에 있어요.','수요일 줄에서 둘째 칸을 찾아요.','🔷 하나는 100이에요.'],['토요일 줄을 위에서부터 세어요.',CANS+'일','백의 자리부터 비교해요.'],['1일이 무슨 요일인지 먼저 봐요.','백의 자리가 같으면 십의 자리를 비교해요.'])},
+ ]};
+
+})();
+const KEYS=['lock','give','set','need','when','needs','done','locked','pre','after','consume','useMsg','html','hideWhen'];
+['story','endText','title'].forEach(k=>{if(P[k])THEME[k]=P[k]});if(P.items)Object.assign(THEME.items,P.items);
+(P.rooms||[]).forEach((pr,ri)=>{const r=THEME.rooms[ri];if(!r||!pr)return;if(pr.hints)r.hints=pr.hints;if(pr.tip)r.tip=pr.tip;if(pr.name)r.name=pr.name;
+ Object.entries(pr.o||{}).forEach(([id,pt])=>{let o=r.objects.find(x=>x.id===id);if(!o){o={id};r.objects.push(o)}
+  if(pt._clear!==false&&!o.door)KEYS.forEach(k=>delete o[k]);if(o.door)['lock','need','when','needs','pre','locked','html'].forEach(k=>{if(k in pt)delete o[k]});
+  Object.assign(o,pt);delete o._clear;if(/^deco/.test(id))delete o.deco})});
+})();
+/* 🧩 끝 */</script>
 <script>
 const DART=d=>{const [k,e,t,x,y,S]=d;
 if(k==='f')return E(x,y+S*0.4,S*0.42,S*0.09,'#0000002e')+EM(x,y,e,S*0.85,'filter="url(#sh)"');
@@ -364,9 +419,9 @@ if(k==='p'){const w=S*0.95,h=S*0.95;return C(x,y-h/2-10,4,'#555')+P(`M${x} ${y-h
 const sw=S*1.1;return EM(x,y-S*0.12,e,S*0.68,'filter="url(#sh)"')+R(x-sw/2,y+S*0.24,sw,13,'#8d5a34','rx="3" filter="url(#sh)"')+R(x-sw/2+12,y+S*0.24+13,9,20,'#5e3a1f','rx="2"')+R(x+sw/2-21,y+S*0.24+13,9,20,'#5e3a1f','rx="2"')};
 /* 🧸 분위기 소품 (문제와 상관없는 기물 · 눌러 보면 설명만 나와요) */
 const DECOR=[[["s", "🌻", "해바라기", 540, 250, 150, "꿀벌들이 좋아하는 큰 해바라기예요."], ["f", "🍯", "꿀 항아리", 510, 800, 125, "달콤한 꿀이 가득! 몰래 먹으면 경비 벌이 화내요."], ["a", "🪶", "꽃가루 바람", 1065, 250, 150, "노란 꽃가루가 바람에 날려요. 에취!"]], [["f", "🌸", "민들레", 90, 735, 125, "후~ 불면 씨앗이 날아가요."], ["a", "🦋", "나비 손님", 90, 250, 150, "나비가 꽃밭에 놀러 왔어요. 꿀벌과 친구래요."], ["f", "💧", "이슬 방울", 495, 735, 125, "꽃잎에 맺힌 이슬이에요. 꿀벌의 물이에요."]], [["s", "👑", "왕관 장식", 1170, 250, 150, "벽에 걸린 밀랍 왕관 장식이에요."], ["f", "🛋️", "꽃잎 소파", 90, 735, 125, "여왕벌이 쉬는 꽃잎 소파예요."], ["s", "🕯️", "밀랍 초", 1470, 525, 150, "벌집 밀랍으로 만든 초가 은은하게 타요."]]];
-DECOR.forEach((list,ri)=>{const r=THEME.rooms[ri];if(!r)return;list.forEach((d,k)=>r.objects.push({id:'deco'+k,deco:1,title:d[1]+' '+d[2],art:DART(d),html:'<div class="box">'+d[6]+'</div>'}))});
+DECOR.forEach((list,ri)=>{const r=THEME.rooms[ri];if(!r)return;list.forEach((d,k)=>{const ex=r.objects.find(o=>o.id==='deco'+k);if(ex){if(!ex.art)ex.art=DART(d);if(!ex.title)ex.title=d[1]+' '+d[2];return}r.objects.push({id:'deco'+k,deco:1,title:d[1]+' '+d[2],art:DART(d),html:'<div class="box">'+d[6]+'</div>'})})});
 /* 🖼️ AI 배경 그림 */
-const ARTMAP={"rooms": [{"comb": [33, 160, 373, 400, {"fit": 1, "pad": 0.75}], "guard": [387, 513, 200, 247], "door": [1107, 100, 480, 713], "deco0": [747, 213, 160, 487], "deco1": [913, 507, 213, 240], "deco2": [560, 100, 400, 110]}, {"board": [580, 193, 480, 307, {"fit": 1, "pad": 0.85}], "dance": [1060, 593, 500, 267, {"svg": "EM(1310,650,'🐝',120)"}], "deco0": [207, 487, 367, 287], "deco1": [260, 140, 227, 220], "deco2": [680, 687, 140, 100]}, {"cal": [33, 133, 373, 427], "queen": [1160, 240, 387, 507], "deco0": [713, 153, 233, 173], "deco1": [353, 453, 513, 300], "deco2": [913, 373, 193, 240]}], "id": "g2-bee"};
+const ARTMAP={"rooms": [{"comb": [33, 160, 373, 400], "guard": [387, 513, 200, 247], "door": [1107, 100, 480, 713], "deco0": [747, 213, 160, 487], "deco1": [913, 507, 213, 240], "deco2": [560, 100, 400, 110]}, {"board": [580, 193, 480, 307], "dance": [1060, 593, 500, 267], "deco0": [207, 487, 367, 287], "deco1": [260, 140, 227, 220], "deco2": [680, 687, 140, 100]}, {"cal": [33, 133, 373, 427], "queen": [1160, 240, 387, 507], "deco0": [713, 153, 233, 173], "deco1": [353, 453, 513, 300], "deco2": [913, 373, 193, 240]}], "id": "g2-bee"};
 const AMbox=a=>{const ns='http://www.w3.org/2000/svg';const sv=document.createElementNS(ns,'svg');sv.setAttribute('width','1600');sv.setAttribute('height','900');sv.style.cssText='position:absolute;left:-9999px;top:0';sv.innerHTML=DEFS+a;document.body.appendChild(sv);let b={x:0,y:0,width:1,height:1};try{const g=document.createElementNS(ns,'g');while(sv.childNodes.length>1)g.appendChild(sv.childNodes[1]);sv.appendChild(g);const r=g.getBBox();b={x:r.x,y:r.y,width:r.width||1,height:r.height||1}}catch(e){}sv.remove();return b};
 ARTMAP.rooms.forEach((hot,ri)=>{const r=THEME.rooms[ri];if(!r||!hot)return;const src='art/'+ARTMAP.id+'_'+(ri+1)+'.webp';
  r.bg=()=>`<image href="${src}" x="0" y="0" width="1600" height="900" preserveAspectRatio="xMidYMid slice"/>`;
